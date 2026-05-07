@@ -1,0 +1,106 @@
+                            PLUSONE - RELEASE NOTES
+                              Version 1.0.0
+                           First Official Release
+                              January 2026
+
+Welcome to PlusOne — the app that makes sure no one is left out!
+
+ABOUT THIS RELEASE
+
+This is the first official release of PlusOne, a social events platform designed
+to help you discover local events, meet new people, and create meaningful 
+connections in your community.
+
+KEY FEATURES
+
+DISCOVER & EXPLORE EVENTS
+  • Browse events happening near you with location-based discovery
+  • Search and filter events by category, date, and trending status
+  • View detailed event information including venue, time, and attendees
+  • Bookmark events you're interested in for easy access later
+
+JOIN & PARTICIPATE
+  • Seamlessly join events with a simple registration flow
+  • View all your joined events in one convenient place
+  • See who else is attending events before you join
+  • Leave events if your plans change
+
+CREATE YOUR OWN EVENTS
+  • Host your own events and invite others to join
+  • Add event details including location, date, time, and description
+  • Upload custom event images with built-in image picker and cropping
+  • Events go through admin approval to ensure quality and safety
+
+REAL-TIME CHAT
+  • Connect with event attendees through in-app messaging
+  • Chat with other participants before and after events
+  • Stay updated with real-time notifications
+
+PERSONALIZED PROFILE
+  • Create and customize your personal profile
+  • Select your interests to get personalized event recommendations
+  • Connect your Google account for easy sign-in
+  • Manage your privacy and security settings
+
+SEAMLESS ONBOARDING
+  • Quick and easy sign-up with phone number verification
+  • OTP-based authentication for secure access
+  • Waitlist system to ensure a quality community
+  • Interest selection to tailor your experience from day one
+
+ADDITIONAL FEATURES
+  • Push notifications to stay updated on events and messages
+  • Dark mode support for comfortable viewing
+  • Multi-language support
+  • Privacy policy and terms of service
+  • Help and support center
+
+--------------------------------------------------------------------------------
+PLATFORM SUPPORT
+--------------------------------------------------------------------------------
+
+  • Android (API level 21+)
+  • iOS (iOS 13+)
+  • Web (Progressive Web App)
+
+--------------------------------------------------------------------------------
+TECHNICAL HIGHLIGHTS
+--------------------------------------------------------------------------------
+
+  • Built with React Native and Expo SDK 54
+  • File-based routing with Expo Router
+  • Google Maps integration for location services
+  • Real-time updates with Expo Updates
+  • Modern React 19 with concurrent features
+  • Smooth animations with React Native Reanimated
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS
+--------------------------------------------------------------------------------
+
+  • Event creation requires admin approval before becoming visible
+  • Location permissions required for full functionality
+  • Internet connection required for all features
+
+--------------------------------------------------------------------------------
+GETTING STARTED
+--------------------------------------------------------------------------------
+
+1. Download the app from your preferred app store
+2. Sign up with your phone number
+3. Complete the waitlist verification
+4. Set up your profile and select your interests
+5. Start discovering events near you!
+
+--------------------------------------------------------------------------------
+FEEDBACK & SUPPORT
+--------------------------------------------------------------------------------
+
+We'd love to hear from you! If you have any feedback, suggestions, or encounter
+any issues, please reach out through the Help & Support section in the app.
+
+Thank you for choosing PlusOne. Let's make sure no one is left out!
+
+================================================================================
+                     © 2026 PlusOne. All rights reserved.
+================================================================================

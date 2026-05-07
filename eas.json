@@ -1,0 +1,38 @@
+{
+  "cli": {
+    "version": ">= 16.28.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.plusoneindia.in/api",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "934516385017-klc4sr0ir2ujlf258g33almt5tq8lahn.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "934516385017-klc4sr0ir2ujlf258g33almt5tq8lahn.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "934516385017-tqt7ahbq2r6muockmdlp7hndjdu1ia3r.apps.googleusercontent.com",
+        "EXPO_PUBLIC_DEEP_LINK_SCHEME": "plusone"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {}
+    },
+    "debug": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
