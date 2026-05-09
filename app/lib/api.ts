@@ -113,6 +113,13 @@ async function apiFetch(path: string, options: RequestInit = {}) {
   }
 }
 
+async function apiFetchText(path: string) {
+  const url = `${API_BASE}${path}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+  return res.text();
+}
+
 export const api = {
   me: () => apiFetch("/auth/me"),
   logout: () => apiFetch("/auth/logout", { method: "POST" }),
@@ -186,6 +193,8 @@ export const api = {
       }),
     markRead: (conversationId: string) =>
       apiFetch(`/chat/${conversationId}/read`, { method: "POST" }),
+    deleteMessage: (conversationId: string, messageId: string) =>
+      apiFetch(`/chat/${conversationId}/messages/${messageId}`, { method: "DELETE" }),
   },
   uploads: {
     // Get presigned URL for direct client upload
@@ -276,6 +285,11 @@ export const api = {
     list: () => apiFetch("/blocks"),
     block: (userId: string) => apiFetch(`/blocks/${userId}`, { method: "POST" }),
     unblock: (userId: string) => apiFetch(`/blocks/${userId}`, { method: "DELETE" }),
+  },
+  legal: {
+    terms: () => apiFetchText("/legal/terms"),
+    privacy: () => apiFetchText("/legal/privacy"),
+    eula: () => apiFetchText("/legal/eula"),
   },
 };
 

@@ -54,6 +54,7 @@ export default function ChatDetail() {
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportTarget, setReportTarget] = useState<{ id: string; name: string } | null>(null);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+  const [hateSpeechError, setHateSpeechError] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   // Keyboard listeners for Android
@@ -85,6 +86,8 @@ export default function ChatDetail() {
       setIsLoading(false);
     }
   }, [conversationId]);
+
+
 
   const fetchCurrentUser = useCallback(async () => {
     try {
@@ -125,10 +128,16 @@ export default function ChatDetail() {
     return () => clearInterval(interval);
   }, [fetchMessages]);
 
+  const handleInputChange = (text: string) => {
+    setInputText(text);
+    if (hateSpeechError) setHateSpeechError(null);
+  };
+
   const handleSend = async () => {
     if (!inputText.trim() || !conversationId || isSending) return;
 
     const messageText = inputText.trim();
+    setHateSpeechError(null);
     setInputText("");
     setIsSending(true);
 
@@ -155,11 +164,17 @@ export default function ChatDetail() {
           )
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
       // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id));
       setInputText(messageText); // Restore input
+      
+      if (error.message && error.message.includes("inappropriate language")) {
+        setHateSpeechError("Hate speech detected");
+      } else {
+        Alert.alert("Error", error.message || "Could not send message. Please try again.");
+      }
     } finally {
       setIsSending(false);
     }
@@ -205,7 +220,14 @@ export default function ChatDetail() {
   };
 
   const handleMessagePress = (item: Message) => {
-    if (isOwnMessage(item.sender_id)) return;
+    if (isOwnMessage(item.sender_id)) {
+      if (selectedMessageId === item.id) {
+        setSelectedMessageId(null);
+      } else {
+        setSelectedMessageId(item.id);
+      }
+      return;
+    }
     if (selectedMessageId === item.id) {
       setSelectedMessageId(null);
     } else {
@@ -243,6 +265,33 @@ export default function ChatDetail() {
     } catch (err: any) {
       throw err;
     }
+  };
+
+  const handleDeleteMessage = (item: Message) => {
+    Alert.alert(
+      "Delete Message",
+      "Are you sure you want to delete this message?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Optimistic UI update
+              setMessages(prev => prev.filter(m => m.id !== item.id));
+              await api.chat.deleteMessage(conversationId as string, item.id);
+            } catch (error) {
+              console.error("Failed to delete message:", error);
+              Alert.alert("Error", "Could not delete message.");
+              fetchMessages(); // Refresh to restore if failed
+            } finally {
+              setSelectedMessageId(null);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const renderMessage = ({ item, index }: { item: Message; index: number }) => {
@@ -283,13 +332,19 @@ export default function ChatDetail() {
             </View>
           )}
           <TouchableOpacity
-            activeOpacity={isOwn ? 1 : 0.7}
+            activeOpacity={isOwn ? 0.7 : 0.7}
             onPress={() => handleMessagePress(item)}
-            onLongPress={!isOwn ? () => handleBlockPrompt(item) : undefined}
+            onLongPress={() => {
+              if (isOwn) {
+                setSelectedMessageId(item.id === selectedMessageId ? null : item.id);
+              } else {
+                handleBlockPrompt(item);
+              }
+            }}
             style={[
               styles.messageBubble,
               isOwn ? styles.ownMessageBubble : styles.otherMessageBubble,
-              isSelected && !isOwn ? { backgroundColor: "#F5EEFC", borderColor: "#3D1A66", borderWidth: 1 } : null
+              isSelected ? { backgroundColor: isOwn ? "#2a1247" : "#F5EEFC", borderColor: "#3D1A66", borderWidth: 1 } : null
             ]}
           >
             {!isOwn && showAvatar && (
@@ -334,6 +389,17 @@ export default function ChatDetail() {
             >
               <View style={styles.reportIconCircle}>
                 <Ionicons name="flag" size={16} color="#FF4444" />
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {isSelected && isOwn && (
+            <TouchableOpacity
+              style={[styles.reportIconWrapper, { marginRight: 8, marginLeft: 0 }]}
+              onPress={() => handleDeleteMessage(item)}
+            >
+              <View style={[styles.reportIconCircle, { backgroundColor: "#FFE8E8" }]}>
+                <Ionicons name="trash" size={16} color="#FF4444" />
               </View>
             </TouchableOpacity>
           )}
@@ -423,6 +489,14 @@ export default function ChatDetail() {
           />
         )}
 
+        {/* Hate Speech Warning */}
+        {hateSpeechError && (
+          <View style={styles.hateSpeechWarning}>
+            <Ionicons name="warning" size={16} color="#FF4444" />
+            <CText style={styles.hateSpeechText}>{hateSpeechError}</CText>
+          </View>
+        )}
+
         {/* Input Bar */}
         {isEventEnded ? (
           <View
@@ -458,7 +532,7 @@ export default function ChatDetail() {
                 placeholder="Type a message..."
                 placeholderTextColor="#999"
                 value={inputText}
-                onChangeText={setInputText}
+                onChangeText={handleInputChange}
                 multiline
                 maxLength={2000}
               />
@@ -779,6 +853,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#D0D0D0",
     shadowOpacity: 0,
     elevation: 0,
+  },
+  hateSpeechWarning: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFE8E8",
+    padding: 10,
+    marginHorizontal: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    gap: 6,
+    justifyContent: "center",
+  },
+  hateSpeechText: {
+    color: "#FF4444",
+    fontWeight: "600",
+    fontSize: 14,
   },
   inputWrapperLocked: {
     backgroundColor: "#F0F0F0",

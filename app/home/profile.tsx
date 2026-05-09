@@ -474,7 +474,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity
               style={styles.settingItem}
-              onPress={() => router.push("/home/terms-conditions" as any)}
+              onPress={() => router.push("/home/legal?type=terms" as any)}
             >
               <View style={styles.settingLeft}>
                 <View
@@ -493,7 +493,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity
               style={styles.settingItem}
-              onPress={() => router.push("/home/privacy-policy" as any)}
+              onPress={() => router.push("/home/legal?type=privacy" as any)}
             >
               <View style={styles.settingLeft}>
                 <View

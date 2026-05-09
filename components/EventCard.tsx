@@ -1,8 +1,8 @@
+import api from "@/app/lib/api";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Image, StyleSheet, TouchableOpacity, View, Alert } from "react-native";
 import { useState } from "react";
-import api from "@/app/lib/api";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import CText from "./CText";
 import ReportModal from "./ReportModal";
 
@@ -89,20 +89,25 @@ export default function EventCard({
           {isTrending && (
             <View style={styles.trendingBadge}>
               <Ionicons name="flame" size={14} color="#FF6B35" />
-              <CText fontSize={12} weight="medium" style={styles.trendingText}>Trending</CText>
+              <CText fontSize={12} weight="medium" style={styles.trendingText}>
+                Trending
+              </CText>
             </View>
           )}
-
         </View>
 
         {/* Bottom overlay with info */}
         <View style={styles.bottomOverlay}>
-          <CText fontSize={22} weight="medium" style={styles.eventTitle}>{title}</CText>
+          <CText fontSize={22} weight="medium" style={styles.eventTitle}>
+            {title}
+          </CText>
 
           <View style={styles.locationRow}>
             <View style={styles.locationBadge}>
               <Ionicons name="location" size={12} color="#3D1A66" />
-              <CText fontSize={12} weight="medium" style={styles.locationText}>{location.name}</CText>
+              <CText fontSize={12} weight="medium" style={styles.locationText}>
+                {location.name}
+              </CText>
             </View>
 
             {/* For When we have location enabled */}
