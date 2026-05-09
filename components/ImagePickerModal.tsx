@@ -38,7 +38,7 @@ export default function ImagePickerModal({
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please allow access to your photo library to select an image."
+          "Photo library access is needed to select an image.",
         );
         return;
       }
@@ -97,7 +97,9 @@ export default function ImagePickerModal({
           <TouchableOpacity style={styles.headerButton} onPress={handleClose}>
             <Ionicons name="close" size={28} color="white" />
           </TouchableOpacity>
-          <CText fontSize={18} weight="medium" style={styles.headerTitle}>{title}</CText>
+          <CText fontSize={18} weight="medium" style={styles.headerTitle}>
+            {title}
+          </CText>
           <View style={styles.headerButton} />
         </View>
 
@@ -154,9 +156,7 @@ export default function ImagePickerModal({
                     onPress={handlePickImage}
                   >
                     <Ionicons name="images" size={22} color="white" />
-                    <CText style={styles.pickButtonText}>
-                      Open Photo Library
-                    </CText>
+                    <CText style={styles.pickButtonText}>Choose Photo</CText>
                   </TouchableOpacity>
                 </>
               )}

@@ -1,0 +1,133 @@
+## 📦 Detected Dependencies
+**Core Framework:** Expo, React Native, React.
+**Authentication:**
+*   `@react-native-google-signin/google-signin`: Google Sign-In integration.
+*   `expo-apple-authentication`: Apple Sign-In integration.
+**Storage:**
+*   `@react-native-async-storage/async-storage`: Local persistent storage.
+*   `expo-secure-store`: Secure storage for sensitive data.
+**Location & Mapping:**
+*   `expo-location`: Device location services.
+*   `react-native-maps`: Integration with mapping services (likely Google Maps or Apple Maps).
+**Notifications:**
+*   `expo-notifications`: Push notification handling.
+**Media & Assets:**
+*   `expo-av`: Audio/Video playback.
+*   `expo-image`: Image handling.
+*   `expo-image-picker`: Accessing device photo library/camera.
+
+## 🔍 Wording Audit & UI Consistency
+Checked the app for manipulative iOS permission prompt wording ("Grant Access", "Allow Permission", "Open Photo Library").
+
+### Relevant Files
+*   `components/ImagePickerModal.tsx`
+*   `app/home/edit-profile.tsx`
+*   `app/home/profile.tsx`
+*   `app/onboarding/profile-setup.tsx`
+*   `app/home/create-event.tsx`
+
+### Upload Flow Findings
+*   Users can upload a profile picture during onboarding and in `edit-profile.tsx`.
+*   Users can upload an event cover image in `create-event.tsx`.
+*   `ImagePickerModal.tsx` acts as the shared component to present the selection choices and prompt for `expo-image-picker` permissions.
+
+### Permission-Related Components
+*   `ImagePickerModal.tsx`
+*   `edit-profile.tsx`
+*   `profile.tsx`
+
+### Implementation Progress
+*   [x] Replaced "Open Photo Library" with "Choose Photo" in `ImagePickerModal.tsx`.
+*   [x] Updated manipulative validation wording "Please allow access to your photo library..." to "Photo library access is needed..." in `ImagePickerModal.tsx`, `edit-profile.tsx`, and `profile.tsx`.
+*   [x] Ensured UI flows (e.g. `onboarding/profile-setup.tsx` utilizing `ImagePickerModal`) remain functionally intact while conforming to Apple Guideline 5.1.1.
+
+## 🍏 Sign in with Apple (Guideline 4 Compliance)
+### Architecture Findings
+*   App uses `expo-apple-authentication`, posting `identityToken` and optional `fullName` / `email` to backend (`/auth/apple`).
+*   Apple only provides `fullName` and `email` on the *first* authentication. Returning users or successive logins omit this data.
+*   Backend service `getOrCreateUserFromApple` persists `email` from the identity token and `fullName` to SQLite when available. Defaulting to `"Apple User"`.
+
+### Issues Addressed
+*   Prior behavior forced users through a manual profile setup requesting their `Full Name` even when coming from Apple Sign-In. Apple Guideline 4 strictly prohibits asking users to manually re-enter their Name or Email post-Authentication if they used Sign in with Apple.
+
+### Implementation Progress (Apple Sign-In Fix)
+*   [x] Found `app/onboarding/index.tsx` and modified the router push to `/onboarding/profile-setup`. Now seamlessly passes the `data.user.full_name`, persisting Apple data automatically.
+*   [x] Addressed handling for `app/onboarding/connectGoogle.tsx` logic ensuring identically safe `router.push()` passing.
+*   [x] `profile-setup.tsx` securely detects the auto-filled `params.name`, rendering it immutable yet pre-filled, confirming we don't redundantly *ask* the user for their identity specifics while preventing onboarding blockages.
+*   [x] Maintained compatibility with Google Sign-in since both share `onboarding/profile-setup.tsx`.
+
+*   `expo-video`: Video playback.
+*   `expo-font`: Font asset management.
+**Networking & Linking:**
+*   `expo-linking`: Deep linking support.
+*   `expo-web-browser`: Handling external web links.
+**UI/UX & State:**
+*   `@react-navigation/*`: Complex navigation structure.
+*   `react-native-reanimated`, `react-native-gesture-handler`: Advanced animation and gesture handling.
+*   `expo-haptics`: Haptic feedback.
+**System/Platform:**
+*   `expo-constants`, `expo-status-bar`, `expo-system-ui`: Accessing platform-specific details.
+**Other:**
+*   `@expo/vector-icons`: Icon usage.
+
+## 🌐 APIs & External Services
+*   **Authentication:** Google Sign-In, Apple Sign-In.
+*   **Location:** Device GPS/Location services (`expo-location`, `react-native-maps`).
+*   **Media:** Camera/Gallery access (`expo-image-picker`), Audio/Video playback (`expo-av`, `expo-video`).
+*   **Notifications:** Push notifications (`expo-notifications`).
+*   **Web:** Deep linking and web browsing (`expo-linking`, `expo-web-browser`).
+
+## 🔐 Authentication & Authorization
+*   Uses Google Sign-In and Apple Sign-In.
+*   Relies on `expo-secure-store` for sensitive credentials.
+
+## 📊 Data Collection & Tracking
+### Analytics/Crash Reporting
+*   No explicit SDKs (e.g., Firebase, Sentry) are visible in `package.json`, but the presence of `expo-updates` and general app structure suggests potential for tracking/analytics. This needs confirmation from source code analysis.
+
+### User Data Collected
+*   Location data (via `expo-location`).
+*   User profile data (implied by components like `edit-profile.tsx`).
+*   User interaction data (via navigation and component usage).
+
+### Permissions Used
+*   Camera/Photo Library access (via `expo-image-picker`).
+*   Location services (via `expo-location`).
+*   (Potentially) Microphone access (if audio recording is implemented, though not explicitly listed).
+
+## 💾 Storage & Database Systems
+*   **Local Storage:** `@react-native-async-storage/async-storage` (Key-Value store).
+*   **Secure Storage:** `expo-secure-store` (For tokens/passwords).
+*   **Database:** No explicit database dependency (e.g., SQLite, Realm) is visible in `package.json`. Database interaction must be inferred from source code (e.g., `backend/sql/` files).
+
+## ⚙️ Core Functionality & Features
+*   **Navigation:** Complex tab-based navigation (`@react-navigation/bottom-tabs`) covering multiple user flows (Home, Chat, Profile, etc.).
+*   **User Flows:** Onboarding (`onboarding/`), Profile Management (`profile.tsx`, `edit-profile.tsx`), Event Management (`create-event.tsx`, `event-details.tsx`, `joined-events.tsx`), Chat/Messaging (`chat.tsx`, `chat-detail.tsx`).
+*   **Backend Communication:** Implied by `lib/api.ts` and `backend/` directory structure.
+*   **Background Tasks:** Not explicitly visible, but `expo-notifications` suggests background handling.
+
+## 🤖 AI & Advanced Features
+*   None explicitly detected from dependencies.
+
+## 💳 Payment & Subscription Systems
+*   None explicitly detected from dependencies.
+
+## 🔔 Notifications & Background Tasks
+*   `expo-notifications` is used for push notifications.
+
+## 📜 Compliance & Legal Notes
+*   The application handles sensitive user data (location, profile, chat content) and requires explicit user consent for permissions (Location, Camera).
+*   The use of third-party services (Google/Apple Auth, Maps) requires clear disclosure.
+
+## ❓ Open Questions & Uncertain Findings
+*   The nature of the backend communication (API endpoints, data models) is unknown.
+*   The specific implementation of data persistence (is it purely local, or does it rely on a remote backend not listed in dependencies?) needs confirmation.
+*   The purpose and usage of the `backend/` directory structure (SQL files, `src/` code) need deep analysis.
+
+## 📂 Files Already Analyzed
+*   `package.json`
+
+## 🚧 Remaining Work
+1.  Analyze `app.json` and `expo-env.d.ts` for configuration details.
+2.  Analyze source code files in `app/`, `lib/`, `components/`, `hooks/`, and `backend/` to map functionality and data usage.
+3.  Analyze `backend/sql/` files to understand the database schema and data model.

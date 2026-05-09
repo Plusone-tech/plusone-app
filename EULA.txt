@@ -1,0 +1,98 @@
+# End-User License Agreement (EULA) for PlusOne
+
+**Last Updated:** May 9, 2026
+**Version:** 1.0
+**Effective Date:** May 9, 2026
+
+**PLEASE READ THIS AGREEMENT CAREFULLY.**
+
+This End-User License Agreement ("EULA") governs your access to and use of the PlusOne mobile application (the "Service"). By downloading, installing, or otherwise using the Service, you agree to be bound by the terms of this EULA. If you do not agree to all of these terms, you must not use the Service.
+
+---
+
+### 1. ACCEPTANCE OF TERMS
+
+By using the Service, you confirm that you have read, understood, and agree to abide by all terms and conditions set forth in this EULA, including the Privacy Policy (which is incorporated herein by reference).
+
+### 2. SERVICE DESCRIPTION AND FUNCTIONALITY
+
+The Service is a social networking and event discovery platform designed to connect users based on shared interests and local events. Core functionalities include:
+*   **Event Discovery:** Users can browse, view details, and discover local events.
+*   **Event Management:** Users can create, manage, and view details of events, which are subject to administrative review and approval.
+*   **Social Interaction:** Users can join events, bookmark events, and communicate via private messaging (Chat).
+*   **Profile Management:** Users can create and maintain detailed profiles, including personal information, interests, and security settings.
+*   **Location Services:** The Service utilizes real-time location data to display nearby events and facilitate local connections.
+
+### 3. USER RESPONSIBILITIES AND CONDUCT
+
+You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree not to:
+*   Use the Service for any illegal purpose or in any manner prohibited by these terms.
+*   Impersonate any person or entity.
+*   Engage in harassment, spamming, or posting inappropriate content.
+*   Attempt to reverse engineer, decompile, or disassemble the Service.
+
+### 4. DATA COLLECTION AND PRIVACY DISCLOSURES
+
+**A. Data Collected:**
+The Service collects various types of personal and usage data, including but not limited to:
+*   **Identity Data:** Full name, email address, profile picture, date of birth, gender, and user-provided bio information.
+*   **Location Data:** Precise and approximate location data (via `expo-location`) is collected when the user grants permission, primarily for displaying nearby events.
+*   **Communication Data:** Content of messages sent through the chat feature.
+*   **Activity Data:** Records of events attended, events bookmarked, and user interactions within the app.
+*   **Media Data:** Photos and images uploaded by the user (e.g., profile pictures, event photos).
+
+**B. Permissions:**
+The Service requires and utilizes the following device permissions:
+*   **Location Services:** Required for geo-fencing and displaying local events.
+*   **Photo Library Access:** Required for uploading profile pictures and event media.
+
+**C. Data Storage:**
+Data is stored using a combination of technologies:
+*   **Local Storage:** AsyncStorage is used for temporary client-side data.
+*   **Secure Storage:** Expo SecureStore is used for highly sensitive data, such as authentication tokens.
+*   **Database:** A PostgreSQL database is used to manage core data structures, including `app_user`, `event`, `notification`, `conversation`, and `message` tables.
+
+### 5. THIRD-PARTY SERVICES AND INTEGRATIONS
+
+The Service relies on several third-party services, each with its own privacy policies. By using the Service, you consent to the use of these services:
+*   **Authentication:** Google Sign-In and Apple Sign-In are used for account creation and login.
+*   **Mapping:** Location services utilize mapping APIs (e.g., Google Maps/Apple Maps) for displaying event locations.
+*   **Notifications:** Push notifications are managed via Expo Notifications.
+*   **Cloud Storage:** AWS S3 is used for storing uploaded media assets (profile pictures, event images).
+
+### 6. ACCOUNT AND SECURITY TERMS
+
+**A. Authentication:**
+Accounts are secured using industry-standard practices, including session management and token-based authentication. Users must protect their passwords and credentials.
+
+**B. Data Ownership:**
+You retain ownership of all content you submit to the Service (User-Generated Content). By submitting content, you grant PlusOne a worldwide, royalty-free, perpetual, irrevocable, transferable license to use, reproduce, modify, and distribute such content solely for the purpose of operating and improving the Service.
+
+### 7. DATA HANDLING AND COMPLIANCE
+
+**A. Data Security:**
+The backend implements security measures, including role-based access control (Admin/User) and encryption for sensitive data (e.g., passwords stored via hashing).
+
+**B. Data Retention:**
+Data retention policies are governed by the Service's internal policies and applicable law.
+
+**C. AI Usage Disclosure:**
+*   *Note: No explicit AI API usage was detected in the current codebase analysis.* If AI features are added, they will be disclosed here.
+
+### 8. LIMITATIONS OF LIABILITY AND WARRANTY DISCLAIMER
+
+THE SERVICE IS PROVIDED "AS IS" AND "WITH ALL FAULTS." PLUSONE EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, PLUSONE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES, INCLUDING DAMAGES FOR LOSS OF PROFITS, REVENUE, OR DATA, ARISING OUT OF YOUR USE OF THE SERVICE.
+
+### 9. TERMINATION AND MODERATION
+
+PlusOne reserves the right to suspend or terminate your account and access to the Service immediately, without notice, if we believe you have violated any term of this EULA or engaged in conduct that is harmful, illegal, or violates our community guidelines.
+
+### 10. GOVERNING LAW AND CONTACT
+
+This EULA shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions.
+
+**For questions regarding this EULA, please contact:**
+[Contact Placeholder]
+
+---
+**BY CONTINUING TO USE THE SERVICE, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREED TO THIS ENTIRE EULA.**

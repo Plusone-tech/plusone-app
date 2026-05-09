@@ -20,24 +20,27 @@ export async function clearAuthToken(): Promise<void> {
 
 async function apiFetch(path: string, options: RequestInit = {}) {
   const url = `${API_BASE}${path}`;
-  
-  console.log(`[apiFetch] ${options.method || 'GET'} ${url}`);
-  
+
+  console.log(`[apiFetch] ${options.method || "GET"} ${url}`);
+
   // Get stored token and add to headers
   const token = await getAuthToken();
-  
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
-  
+
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
   // Log the request body for debugging (truncated)
   if (options.body) {
-    const bodyStr = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+    const bodyStr =
+      typeof options.body === "string"
+        ? options.body
+        : JSON.stringify(options.body);
     console.log(`[apiFetch] Request body:`, bodyStr.substring(0, 500));
   }
 
@@ -54,21 +57,36 @@ async function apiFetch(path: string, options: RequestInit = {}) {
     let responseBody: any = null;
     try {
       responseBody = await res.json();
-      console.error(`[apiFetch] Error response body:`, JSON.stringify(responseBody, null, 2));
+      console.error(
+        `[apiFetch] Error response body:`,
+        JSON.stringify(responseBody, null, 2),
+      );
       // Extract a readable error message
       const rawError = responseBody?.error;
-      if (typeof rawError === 'string') {
+      if (typeof rawError === "string") {
         message = rawError;
-      } else if (rawError?.fieldErrors && typeof rawError.fieldErrors === 'object') {
+      } else if (
+        rawError?.fieldErrors &&
+        typeof rawError.fieldErrors === "object"
+      ) {
         // Zod validation error shape: { formErrors: [], fieldErrors: { field: ["msg"] } }
         const fieldMessages = Object.entries(rawError.fieldErrors)
-          .map(([field, msgs]: [string, any]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-          .join('\n');
+          .map(
+            ([field, msgs]: [string, any]) =>
+              `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`,
+          )
+          .join("\n");
         message = fieldMessages || JSON.stringify(rawError);
-      } else if (responseBody?.message && typeof responseBody.message === 'string') {
+      } else if (
+        responseBody?.message &&
+        typeof responseBody.message === "string"
+      ) {
         message = responseBody.message;
       } else {
-        message = typeof responseBody === 'string' ? responseBody : JSON.stringify(responseBody);
+        message =
+          typeof responseBody === "string"
+            ? responseBody
+            : JSON.stringify(responseBody);
       }
     } catch {
       try {
@@ -94,7 +112,6 @@ async function apiFetch(path: string, options: RequestInit = {}) {
     return null;
   }
 }
-
 
 export const api = {
   me: () => apiFetch("/auth/me"),
@@ -143,6 +160,11 @@ export const api = {
       apiFetch("/profile/interests", {
         method: "POST",
         body: JSON.stringify({ interests }),
+      }),
+    acceptLegal: (payload: { eula_version: string }) =>
+      apiFetch("/profile/accept-legal", {
+        method: "POST",
+        body: JSON.stringify(payload),
       }),
     completeOnboarding: (payload: any) =>
       apiFetch("/profile/complete-onboarding", {
@@ -241,4 +263,3 @@ export const api = {
 
 export default api;
 export { API_BASE };
-

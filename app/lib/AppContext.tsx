@@ -23,3 +23,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 export function useApp() {
   return useContext(AppContext);
 }
+
+// Dummy default export to satisfy Expo Router's route requirements
+export default function AppContextRoute() {
+  return null;
+}

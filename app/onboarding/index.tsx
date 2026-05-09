@@ -6,7 +6,14 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
-import { Alert, Linking, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function OnBoarding() {
   const router = useRouter();
@@ -29,8 +36,13 @@ export default function OnBoarding() {
       console.log("  Platform:", Platform.OS);
 
       if (!webClientId) {
-        console.error("❌ FATAL: webClientId is undefined! Check EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in .env");
-        Alert.alert("Config Error", "Google Web Client ID is not set in environment variables.");
+        console.error(
+          "❌ FATAL: webClientId is undefined! Check EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in .env",
+        );
+        Alert.alert(
+          "Config Error",
+          "Google Web Client ID is not set in environment variables.",
+        );
         return;
       }
 
@@ -62,7 +74,10 @@ export default function OnBoarding() {
       console.log("  Has serverAuthCode:", !!userInfo.data?.serverAuthCode);
 
       if (userInfo.data?.idToken) {
-        console.log("[6/7] Sending idToken to backend:", `${API_BASE}/auth/google/mobile`);
+        console.log(
+          "[6/7] Sending idToken to backend:",
+          `${API_BASE}/auth/google/mobile`,
+        );
         const response = await fetch(`${API_BASE}/auth/google/mobile`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -75,11 +90,16 @@ export default function OnBoarding() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error("  ❌ Backend error body:", errorText);
-          throw new Error(`Backend auth failed (${response.status}): ${errorText}`);
+          throw new Error(
+            `Backend auth failed (${response.status}): ${errorText}`,
+          );
         }
 
         const data = await response.json();
-        console.log("[7/7] Backend response data:", JSON.stringify(data, null, 2));
+        console.log(
+          "[7/7] Backend response data:",
+          JSON.stringify(data, null, 2),
+        );
 
         if (data.token) {
           await setAuthToken(data.token);
@@ -88,7 +108,13 @@ export default function OnBoarding() {
 
         if (data.needsOnboarding) {
           console.log("  → Navigating to profile-setup");
-          router.push("/onboarding/profile-setup" as any);
+          router.push({
+            pathname: "/onboarding/profile-setup",
+            params: {
+              name: data.user?.full_name || "",
+              avatar_url: data.user?.avatar_url || "",
+            },
+          } as any);
         } else {
           console.log("  → Navigating to home");
           router.push("/home" as any);
@@ -96,18 +122,24 @@ export default function OnBoarding() {
       } else {
         console.error("  ❌ No idToken in signIn response!");
         console.log("  Full userInfo:", JSON.stringify(userInfo, null, 2));
-        Alert.alert("Error", "Google Sign-In succeeded but no ID token was returned.");
+        Alert.alert(
+          "Error",
+          "Google Sign-In succeeded but no ID token was returned.",
+        );
       }
     } catch (err: any) {
       console.error("========== GOOGLE SIGN-IN ERROR ==========");
       console.error("Error name:", err?.name);
       console.error("Error code:", err?.code);
       console.error("Error message:", err?.message);
-      console.error("Full error:", JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(
+        "Full error:",
+        JSON.stringify(err, Object.getOwnPropertyNames(err), 2),
+      );
       if (err?.code === "SIGN_IN_CANCELLED") return;
       Alert.alert(
         "Google Sign-In Failed",
-        `Code: ${err?.code || "unknown"}\nMessage: ${err?.message || "No details"}`
+        `Code: ${err?.code || "unknown"}\nMessage: ${err?.message || "No details"}`,
       );
     }
   }, [API_BASE, router]);
@@ -118,7 +150,7 @@ export default function OnBoarding() {
       if (!available) {
         Alert.alert(
           "Apple Sign-In not available",
-          "This device does not support Sign in with Apple."
+          "This device does not support Sign in with Apple.",
         );
         return;
       }
@@ -155,23 +187,38 @@ export default function OnBoarding() {
         }
 
         const data = await response.json();
-        
+
         if (data.token) {
           await setAuthToken(data.token);
         }
 
         if (data.needsOnboarding) {
-          router.push("/onboarding/profile-setup" as any);
+          router.push({
+            pathname: "/onboarding/profile-setup",
+            params: {
+              name:
+                data.user?.full_name && data.user.full_name !== "Apple User"
+                  ? data.user.full_name
+                  : "",
+              avatar_url: data.user?.avatar_url || "",
+            },
+          } as any);
         } else {
           router.push("/home" as any);
         }
       } else {
-        Alert.alert("Error", "Apple Sign-In succeeded but no ID token was returned.");
+        Alert.alert(
+          "Error",
+          "Apple Sign-In succeeded but no ID token was returned.",
+        );
       }
     } catch (err: any) {
       if (err?.code === "ERR_CANCELED") return;
       console.warn("Apple login failed", err);
-      Alert.alert("Login failed", err.message || "Could not complete Apple sign-in.");
+      Alert.alert(
+        "Login failed",
+        err.message || "Could not complete Apple sign-in.",
+      );
     }
   }, [APPLE_AUTH_URL, router]);
 
@@ -221,24 +268,6 @@ export default function OnBoarding() {
                 <CText style={{ color: "#fff" }}>Continue with Apple</CText>
               </TouchableOpacity>
             )}
-            <CText fontSize={13} style={styles.tcText}>
-              By continuing, you agree to our{" "}
-              <CText
-                fontSize={13}
-                style={[styles.tcText, { textDecorationLine: "underline" }]}
-                onPress={() => Linking.openURL("https://www.plusoneindia.in/terms")}
-              >
-                Terms & Conditions
-              </CText>
-              {" "}and{" "}
-              <CText
-                fontSize={13}
-                style={[styles.tcText, { textDecorationLine: "underline" }]}
-                onPress={() => Linking.openURL("https://www.plusoneindia.in/privacy")}
-              >
-                Privacy Policy
-              </CText>
-            </CText>
           </View>
         </View>
       </View>

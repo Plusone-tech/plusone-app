@@ -32,7 +32,9 @@ export default function ConnectGoogle() {
       const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
       const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 
-      console.log("========== GOOGLE SIGN-IN DEBUG (connectGoogle.tsx) ==========");
+      console.log(
+        "========== GOOGLE SIGN-IN DEBUG (connectGoogle.tsx) ==========",
+      );
       console.log("[1/8] Environment variables:");
       console.log("  webClientId:", webClientId || "❌ MISSING");
       console.log("  webClientId length:", webClientId?.length);
@@ -70,7 +72,9 @@ export default function ConnectGoogle() {
       await GoogleSignin.signOut();
       console.log("  ✅ Previous session signed out");
 
-      console.log("[5/8] Calling GoogleSignin.signIn() — THIS IS WHERE DEVELOPER_ERROR TYPICALLY HAPPENS...");
+      console.log(
+        "[5/8] Calling GoogleSignin.signIn() — THIS IS WHERE DEVELOPER_ERROR TYPICALLY HAPPENS...",
+      );
       const userInfo = await GoogleSignin.signIn();
       console.log("  ✅ signIn() returned successfully!");
       console.log("  User email:", userInfo.data?.user?.email || "N/A");
@@ -80,9 +84,18 @@ export default function ConnectGoogle() {
       console.log("  Has serverAuthCode:", !!userInfo.data?.serverAuthCode);
 
       if (userInfo.data?.idToken) {
-        console.log("[6/8] Sending idToken to backend:", `${API_BASE}/auth/google/mobile`);
-        console.log("  Payload: { idToken: [present], phone:", params.phone, ", full_name:", params.full_name, "}");
-        
+        console.log(
+          "[6/8] Sending idToken to backend:",
+          `${API_BASE}/auth/google/mobile`,
+        );
+        console.log(
+          "  Payload: { idToken: [present], phone:",
+          params.phone,
+          ", full_name:",
+          params.full_name,
+          "}",
+        );
+
         const response = await fetch(`${API_BASE}/auth/google/mobile`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -101,11 +114,16 @@ export default function ConnectGoogle() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error("  ❌ Backend error body:", errorText);
-          throw new Error(`Backend authentication failed (${response.status}): ${errorText}`);
+          throw new Error(
+            `Backend authentication failed (${response.status}): ${errorText}`,
+          );
         }
 
         const data = await response.json();
-        console.log("[8/8] Backend response data:", JSON.stringify(data, null, 2));
+        console.log(
+          "[8/8] Backend response data:",
+          JSON.stringify(data, null, 2),
+        );
 
         // Store the JWT token for subsequent API calls
         if (data.token) {
@@ -119,9 +137,7 @@ export default function ConnectGoogle() {
           Alert.alert(
             "Welcome Back!",
             "Your account is already set up. Taking you to the home page.",
-            [
-              { text: "OK", onPress: () => router.replace("/home") }
-            ]
+            [{ text: "OK", onPress: () => router.replace("/home") }],
           );
           return;
         }
@@ -131,7 +147,9 @@ export default function ConnectGoogle() {
           pathname: "/onboarding/profile-setup",
           params: {
             ...params,
-            email: data.user?.email || userInfo.data.user?.email,
+            email: data.user?.email || userInfo.data?.user?.email,
+            name: data.user?.full_name || "",
+            avatar_url: data.user?.avatar_url || "",
           },
         });
       } else {
@@ -140,11 +158,16 @@ export default function ConnectGoogle() {
         Alert.alert("Error", "No authentication token received from Google");
       }
     } catch (err: any) {
-      console.error("========== GOOGLE SIGN-IN ERROR (connectGoogle.tsx) ==========");
+      console.error(
+        "========== GOOGLE SIGN-IN ERROR (connectGoogle.tsx) ==========",
+      );
       console.error("Error name:", err?.name);
       console.error("Error code:", err?.code);
       console.error("Error message:", err?.message);
-      console.error("Full error:", JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(
+        "Full error:",
+        JSON.stringify(err, Object.getOwnPropertyNames(err), 2),
+      );
 
       if (err?.code === "SIGN_IN_CANCELLED") {
         console.log("  User cancelled sign-in");
@@ -154,7 +177,7 @@ export default function ConnectGoogle() {
 
       Alert.alert(
         "Google Sign-In Failed",
-        `Code: ${err?.code || 'Unknown'}\n\nMessage: ${err?.message || 'No message'}\n\nCheck Metro console for full details.`
+        `Code: ${err?.code || "Unknown"}\n\nMessage: ${err?.message || "No message"}\n\nCheck Metro console for full details.`,
       );
     } finally {
       setIsLoading(false);
@@ -207,19 +230,30 @@ export default function ConnectGoogle() {
 
         if (!data.needsOnboarding) {
           Alert.alert("Welcome Back!", "Your account is already set up.", [
-            { text: "OK", onPress: () => router.replace("/home") }
+            { text: "OK", onPress: () => router.replace("/home") },
           ]);
           return;
         }
 
         router.push({
           pathname: "/onboarding/profile-setup",
-          params: { ...params, email: data.user?.email || credential.email },
+          params: {
+            ...params,
+            email: data.user?.email || credential.email,
+            name:
+              data.user?.full_name && data.user.full_name !== "Apple User"
+                ? data.user.full_name
+                : "",
+            avatar_url: data.user?.avatar_url || "",
+          },
         });
       }
     } catch (err: any) {
       if (err?.code !== "ERR_CANCELED") {
-        Alert.alert("Login failed", err.message || "Could not complete Apple sign-in.");
+        Alert.alert(
+          "Login failed",
+          err.message || "Could not complete Apple sign-in.",
+        );
       }
     } finally {
       setIsLoading(false);
@@ -274,7 +308,10 @@ export default function ConnectGoogle() {
 
             {Platform.OS === "ios" && (
               <TouchableOpacity
-                style={[styles.googleButton, { backgroundColor: "#000", borderColor: "#000" }]}
+                style={[
+                  styles.googleButton,
+                  { backgroundColor: "#000", borderColor: "#000" },
+                ]}
                 onPress={handleAppleConnect}
                 disabled={isLoading}
               >

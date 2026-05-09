@@ -46,18 +46,39 @@ export default function EditProfile() {
     multiline: false,
   });
 
-  const openTextBubble = (field: string, label: string, value: string, placeholder: string, multiline = false) => {
-    setTextBubble({ visible: true, label, value, field, placeholder, multiline });
+  const openTextBubble = (
+    field: string,
+    label: string,
+    value: string,
+    placeholder: string,
+    multiline = false,
+  ) => {
+    setTextBubble({
+      visible: true,
+      label,
+      value,
+      field,
+      placeholder,
+      multiline,
+    });
   };
 
   const handleTextBubbleConfirm = (newValue: string) => {
     switch (textBubble.field) {
-      case "name": setName(newValue); break;
-      case "phone": setPhone(newValue); break;
-      case "location": setLocation(newValue); break;
-      case "bio": setBio(newValue); break;
+      case "name":
+        setName(newValue);
+        break;
+      case "phone":
+        setPhone(newValue);
+        break;
+      case "location":
+        setLocation(newValue);
+        break;
+      case "bio":
+        setBio(newValue);
+        break;
     }
-    setTextBubble(prev => ({ ...prev, visible: false }));
+    setTextBubble((prev) => ({ ...prev, visible: false }));
   };
 
   useEffect(() => {
@@ -86,7 +107,7 @@ export default function EditProfile() {
     if (status !== "granted") {
       Alert.alert(
         "Permission Required",
-        "Please allow access to your photo library to change your profile picture."
+        "Photo library access is needed to change your profile picture.",
       );
       return;
     }
@@ -164,7 +185,7 @@ export default function EditProfile() {
         multiline={textBubble.multiline}
         keyboardType={textBubble.field === "phone" ? "phone-pad" : undefined}
         onConfirm={handleTextBubbleConfirm}
-        onCancel={() => setTextBubble(prev => ({ ...prev, visible: false }))}
+        onCancel={() => setTextBubble((prev) => ({ ...prev, visible: false }))}
       />
 
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
@@ -226,11 +247,19 @@ export default function EditProfile() {
               <CText style={styles.label}>Full Name</CText>
               <TouchableOpacity
                 style={styles.inputContainer}
-                onPress={() => openTextBubble("name", "Full Name", name, "Enter your name")}
+                onPress={() =>
+                  openTextBubble("name", "Full Name", name, "Enter your name")
+                }
                 activeOpacity={0.7}
               >
                 <Ionicons name="person-outline" size={20} color="#999" />
-                <CText style={{ flex: 1, fontSize: 16, color: name ? "#333" : "#999" }}>
+                <CText
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: name ? "#333" : "#999",
+                  }}
+                >
                   {name || "Enter your name"}
                 </CText>
               </TouchableOpacity>
@@ -257,11 +286,24 @@ export default function EditProfile() {
               <CText style={styles.label}>Phone Number</CText>
               <TouchableOpacity
                 style={styles.inputContainer}
-                onPress={() => openTextBubble("phone", "Phone Number", phone, "Enter your phone")}
+                onPress={() =>
+                  openTextBubble(
+                    "phone",
+                    "Phone Number",
+                    phone,
+                    "Enter your phone",
+                  )
+                }
                 activeOpacity={0.7}
               >
                 <Ionicons name="call-outline" size={20} color="#999" />
-                <CText style={{ flex: 1, fontSize: 16, color: phone ? "#333" : "#999" }}>
+                <CText
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: phone ? "#333" : "#999",
+                  }}
+                >
                   {phone || "Enter your phone"}
                 </CText>
               </TouchableOpacity>
@@ -271,11 +313,24 @@ export default function EditProfile() {
               <CText style={styles.label}>Location</CText>
               <TouchableOpacity
                 style={styles.inputContainer}
-                onPress={() => openTextBubble("location", "Location", location, "Enter your location")}
+                onPress={() =>
+                  openTextBubble(
+                    "location",
+                    "Location",
+                    location,
+                    "Enter your location",
+                  )
+                }
                 activeOpacity={0.7}
               >
                 <Ionicons name="location-outline" size={20} color="#999" />
-                <CText style={{ flex: 1, fontSize: 16, color: location ? "#333" : "#999" }}>
+                <CText
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: location ? "#333" : "#999",
+                  }}
+                >
                   {location || "Enter your location"}
                 </CText>
               </TouchableOpacity>
@@ -285,10 +340,26 @@ export default function EditProfile() {
               <CText style={styles.label}>Bio</CText>
               <TouchableOpacity
                 style={[styles.inputContainer, styles.textAreaContainer]}
-                onPress={() => openTextBubble("bio", "Bio", bio, "Tell us about yourself", true)}
+                onPress={() =>
+                  openTextBubble(
+                    "bio",
+                    "Bio",
+                    bio,
+                    "Tell us about yourself",
+                    true,
+                  )
+                }
                 activeOpacity={0.7}
               >
-                <CText style={{ flex: 1, fontSize: 16, color: bio ? "#333" : "#999", minHeight: 80 }} numberOfLines={4}>
+                <CText
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: bio ? "#333" : "#999",
+                    minHeight: 80,
+                  }}
+                  numberOfLines={4}
+                >
                   {bio || "Tell us about yourself"}
                 </CText>
               </TouchableOpacity>

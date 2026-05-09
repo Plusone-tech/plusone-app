@@ -15,7 +15,7 @@ import {
   StyleSheet,
   Switch,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, clearAuthToken } from "../lib/api";
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
               text: "Open Settings",
               onPress: () => Linking.openSettings(),
             },
-          ]
+          ],
         );
       }
     } else {
@@ -89,12 +89,10 @@ export default function ProfileScreen() {
             text: "Open Settings",
             onPress: () => Linking.openSettings(),
           },
-        ]
+        ],
       );
     }
   }, []);
-
-
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -130,7 +128,7 @@ export default function ProfileScreen() {
     if (status !== "granted") {
       Alert.alert(
         "Permission Required",
-        "Please allow access to your photo library to change your profile picture."
+        "Photo library access is needed to change your profile picture.",
       );
       return;
     }
@@ -155,7 +153,7 @@ export default function ProfileScreen() {
         await api.uploads.uploadProfilePicture(asset.uri, mimeType);
       // Update local profile state with new avatar
       setProfile((prev) =>
-        prev ? { ...prev, avatar_url: newAvatarUrl } : prev
+        prev ? { ...prev, avatar_url: newAvatarUrl } : prev,
       );
       Alert.alert("Success", "Profile picture updated!");
     } catch (err) {
@@ -205,12 +203,15 @@ export default function ProfileScreen() {
               router.replace("/onboarding" as any);
             } catch (err) {
               console.error("Delete account failed:", err);
-              Alert.alert("Error", "Failed to delete account. Please try again.");
+              Alert.alert(
+                "Error",
+                "Failed to delete account. Please try again.",
+              );
               setLoading(false);
             }
           },
         },
-      ]
+      ],
     );
   }, [router]);
 
@@ -269,10 +270,10 @@ export default function ProfileScreen() {
             <CText style={styles.userName}>
               {profile?.full_name || "User"}
             </CText>
-            <CText style={styles.userEmail}>{profile?.email || ""}</CText>
+            {/* <CText style={styles.userEmail}>{profile?.email || ""}</CText>
             {profile?.phone && (
               <CText style={styles.userPhone}>{profile.phone}</CText>
-            )}
+            )} */}
 
             {/* Stats */}
             <View style={styles.statsContainer}>
@@ -374,8 +375,6 @@ export default function ProfileScreen() {
                 thumbColor={notificationsEnabled ? "#3D1A66" : "#f4f3f4"}
               />
             </View>
-
-
 
             {/* <TouchableOpacity
               style={styles.settingItem}
@@ -505,7 +504,9 @@ export default function ProfileScreen() {
                 </View>
                 <CText style={styles.settingText}>App Version</CText>
               </View>
-              <CText style={styles.settingValue}>{Application.nativeApplicationVersion || "1.0.0"}</CText>
+              <CText style={styles.settingValue}>
+                {Application.nativeApplicationVersion || "1.0.0"}
+              </CText>
             </View>
           </View>
 
@@ -516,7 +517,10 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           {/* Delete Account Button */}
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDeleteAccount}
+          >
             <Ionicons name="trash-outline" size={24} color="#FF4444" />
             <CText style={styles.logoutText}>Delete My Account</CText>
           </TouchableOpacity>

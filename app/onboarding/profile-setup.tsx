@@ -24,13 +24,14 @@ export default function ProfileSetup() {
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState<"male" | "female" | "other" | null>(
-    null
+    null,
   );
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [nameBubbleVisible, setNameBubbleVisible] = useState(false);
+  const [agreedToLegal, setAgreedToLegal] = useState(false);
 
   // Autofill flags
   const isNameAutofilled = Boolean(params && params.name);
@@ -63,13 +64,16 @@ export default function ProfileSetup() {
     setShowImagePicker(false);
     setIsUploadingImage(true);
     try {
-      const uploadResult = await api.uploads.uploadProfilePicture(uri, mimeType);
+      const uploadResult = await api.uploads.uploadProfilePicture(
+        uri,
+        mimeType,
+      );
       setProfileImage(uploadResult.avatarUrl);
     } catch (error: any) {
       console.error("Image upload error:", error);
       Alert.alert(
         "Upload Failed",
-        error.message || "Could not upload image. Please try again."
+        error.message || "Could not upload image. Please try again.",
       );
     } finally {
       setIsUploadingImage(false);
@@ -87,6 +91,14 @@ export default function ProfileSetup() {
       return;
     }
 
+    if (!agreedToLegal) {
+      Alert.alert(
+        "Consent Required",
+        "You must agree to the Terms of Use, Privacy Policy, and EULA to continue.",
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Use the api module which includes JWT token
@@ -96,6 +108,9 @@ export default function ProfileSetup() {
         gender,
         avatar_url: profileImage || undefined,
       });
+
+      // Record legal acceptance
+      await api.profile.acceptLegal({ eula_version: "1.0" });
 
       router.push("/onboarding/interests-setup" as any);
     } catch (err: any) {
@@ -131,7 +146,10 @@ export default function ProfileSetup() {
         label="Full Name"
         value={name}
         placeholder="Enter your full name"
-        onConfirm={(val) => { setName(val); setNameBubbleVisible(false); }}
+        onConfirm={(val) => {
+          setName(val);
+          setNameBubbleVisible(false);
+        }}
         onCancel={() => setNameBubbleVisible(false)}
       />
 
@@ -218,7 +236,16 @@ export default function ProfileSetup() {
               onPress={() => !isNameAutofilled && setNameBubbleVisible(true)}
               activeOpacity={isNameAutofilled ? 1 : 0.7}
             >
-              <CText style={{ fontSize: 16, color: name ? (isNameAutofilled ? "#A2A2A2" : "#333") : "#A2A2A2" }}>
+              <CText
+                style={{
+                  fontSize: 16,
+                  color: name
+                    ? isNameAutofilled
+                      ? "#A2A2A2"
+                      : "#333"
+                    : "#A2A2A2",
+                }}
+              >
                 {name || "Enter your full name"}
               </CText>
             </TouchableOpacity>
@@ -257,7 +284,9 @@ export default function ProfileSetup() {
             value={dateOfBirth}
             onConfirm={handleDateConfirm}
             onCancel={() => setShowDatePicker(false)}
-            maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 13))}
+            maximumDate={
+              new Date(new Date().setFullYear(new Date().getFullYear() - 13))
+            }
           />
 
           {/* Gender Selection */}
@@ -349,14 +378,71 @@ export default function ProfileSetup() {
             </View>
           </View>
 
+          {/* Legal Consent Checkbox */}
+          <View style={styles.legalSection}>
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setAgreedToLegal(!agreedToLegal)}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={agreedToLegal ? "checkbox" : "square-outline"}
+                size={24}
+                color={agreedToLegal ? "#3D1A66" : "#A2A2A2"}
+              />
+              <CText fontSize={12} style={styles.legalText}>
+                I agree to the{" "}
+                <CText
+                  weight="medium"
+                  style={styles.legalLink}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/onboarding/legal",
+                      params: { type: "terms" },
+                    })
+                  }
+                >
+                  Terms of Use
+                </CText>
+                {", "}
+                <CText
+                  weight="medium"
+                  style={styles.legalLink}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/onboarding/legal",
+                      params: { type: "privacy" },
+                    })
+                  }
+                >
+                  Privacy Policy
+                </CText>
+                {", and "}
+                <CText
+                  weight="medium"
+                  style={styles.legalLink}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/onboarding/legal",
+                      params: { type: "eula" },
+                    })
+                  }
+                >
+                  EULA
+                </CText>
+                .
+              </CText>
+            </TouchableOpacity>
+          </View>
+
           {/* Continue Button */}
           <Pressable
             style={[
               styles.buttonContainer,
-              (!name || !gender) && styles.buttonDisabled,
+              (!name || !gender || !agreedToLegal) && styles.buttonDisabled,
             ]}
             onPress={handleContinue}
-            disabled={!name || !gender || isSubmitting}
+            disabled={!name || !gender || !agreedToLegal || isSubmitting}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#3D1A66" />
@@ -364,7 +450,8 @@ export default function ProfileSetup() {
               <CText
                 weight="medium"
                 style={{
-                  color: !name || !gender ? "#A2A2A2" : "#000",
+                  color:
+                    !name || !gender || !agreedToLegal ? "#A2A2A2" : "#000",
                 }}
               >
                 Continue
@@ -527,5 +614,23 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     backgroundColor: "#F5F5F5",
     borderColor: "#D1D1D1",
+  },
+  legalSection: {
+    marginVertical: 16,
+    paddingHorizontal: 5,
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  legalText: {
+    flex: 1,
+    marginLeft: 10,
+    color: "#666",
+    lineHeight: 18,
+  },
+  legalLink: {
+    color: "#3D1A66",
+    textDecorationLine: "underline",
   },
 });
