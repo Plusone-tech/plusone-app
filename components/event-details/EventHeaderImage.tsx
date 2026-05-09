@@ -8,6 +8,7 @@ interface EventHeaderImageProps {
   onBack: () => void;
   onShare?: () => void;
   onBookmark?: () => void;
+  onReport?: () => void;
   isBookmarked?: boolean;
 }
 
@@ -17,6 +18,7 @@ export default function EventHeaderImage({
   onBack,
   onShare,
   onBookmark,
+  onReport,
   isBookmarked = false,
 }: EventHeaderImageProps) {
   return (
@@ -33,6 +35,11 @@ export default function EventHeaderImage({
           {onShare && (
             <TouchableOpacity style={styles.iconButton} onPress={onShare}>
               <Ionicons name="share-social-outline" size={24} color="white" />
+            </TouchableOpacity>
+          )}
+          {onReport && (
+            <TouchableOpacity style={styles.iconButton} onPress={onReport}>
+              <Ionicons name="flag-outline" size={24} color="#FF4444" />
             </TouchableOpacity>
           )}
           {onBookmark && (

@@ -5,6 +5,7 @@ import EventHeaderImage from "@/components/event-details/EventHeaderImage";
 import EventInfoCard from "@/components/event-details/EventInfoCard";
 import EventRules from "@/components/event-details/EventRules";
 import HostCard from "@/components/event-details/HostCard";
+import ReportModal from "@/components/ReportModal";
 import type { Event } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -32,6 +33,8 @@ export default function EventDetails() {
   const [deleting, setDeleting] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [bookmarking, setBookmarking] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: "event" | "user"; id: string; name: string } | null>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -119,6 +122,7 @@ export default function EventDetails() {
             distance: "",
           },
           host: {
+            id: e.host_id,
             name: e.host_name || "Host",
             avatar: e.host_avatar || "https://i.pravatar.cc/100",
             eventsHosted: e.host_events_count || 0,
@@ -246,6 +250,40 @@ export default function EventDetails() {
     }
   };
 
+  const handleReportSubmit = async (reason: string, details: string) => {
+    if (!reportTarget) return;
+    if (reportTarget.type === "event") {
+      await api.reports.create({ targetEventId: reportTarget.id, reason, details });
+    } else {
+      await api.reports.create({ targetUserId: reportTarget.id, reason, details });
+    }
+  };
+
+  const handleBlockHost = async () => {
+    if (!event || event.host.id === "unknown") return;
+    
+    Alert.alert(
+      "Block User",
+      `Are you sure you want to block ${event.host.name}? You will no longer see their events or be able to interact with them.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Block", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.blocks.block(event.host.id);
+              Alert.alert("Blocked", `You have blocked ${event.host.name}.`);
+              router.back();
+            } catch (err: any) {
+              Alert.alert("Error", "Could not block user.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View
@@ -287,6 +325,10 @@ export default function EventDetails() {
         onBack={() => router.back()}
         onBookmark={handleBookmark}
         isBookmarked={event.isBookmarked}
+        onReport={() => {
+          setReportTarget({ type: "event", id: event.id, name: event.title });
+          setReportModalVisible(true);
+        }}
       />
 
       {/* Content */}
@@ -367,6 +409,11 @@ export default function EventDetails() {
             name={event.host.name}
             avatar={event.host.avatar}
             eventsHosted={event.host.eventsHosted}
+            onReport={event.host.id !== "unknown" ? () => {
+              setReportTarget({ type: "user", id: event.host.id, name: event.host.name });
+              setReportModalVisible(true);
+            } : undefined}
+            onBlock={event.host.id !== "unknown" ? handleBlockHost : undefined}
           />
         </View>
 
@@ -477,6 +524,17 @@ export default function EventDetails() {
           </TouchableOpacity>
         )}
       </SafeAreaView>
+
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => {
+          setReportModalVisible(false);
+          setReportTarget(null);
+        }}
+        onSubmit={handleReportSubmit}
+        targetName={reportTarget?.name}
+        type={reportTarget?.type || "event"}
+      />
     </View>
   );
 }

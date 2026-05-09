@@ -259,6 +259,24 @@ export const api = {
         body: JSON.stringify({ publicUrl }),
       }),
   },
+  reports: {
+    create: (payload: {
+      targetUserId?: string;
+      targetEventId?: string;
+      targetMessageId?: string;
+      reason: string;
+      details?: string;
+    }) =>
+      apiFetch("/reports", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+  },
+  blocks: {
+    list: () => apiFetch("/blocks"),
+    block: (userId: string) => apiFetch(`/blocks/${userId}`, { method: "POST" }),
+    unblock: (userId: string) => apiFetch(`/blocks/${userId}`, { method: "DELETE" }),
+  },
 };
 
 export default api;

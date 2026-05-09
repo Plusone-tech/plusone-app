@@ -1,10 +1,12 @@
 import CText from "@/components/CText";
+import ReportModal from "@/components/ReportModal";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Keyboard,
@@ -49,6 +51,9 @@ export default function ChatDetail() {
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isEventEnded, setIsEventEnded] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ id: string; name: string } | null>(null);
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   // Keyboard listeners for Android
@@ -199,12 +204,54 @@ export default function ChatDetail() {
     return currentUser?.id === senderId;
   };
 
+  const handleMessagePress = (item: Message) => {
+    if (isOwnMessage(item.sender_id)) return;
+    if (selectedMessageId === item.id) {
+      setSelectedMessageId(null);
+    } else {
+      setSelectedMessageId(item.id);
+    }
+  };
+
+  const handleBlockPrompt = (item: Message) => {
+    Alert.alert(
+      "Block User",
+      `Are you sure you want to block ${item.full_name}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Block", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.blocks.block(item.sender_id);
+              Alert.alert("Blocked", `You have blocked ${item.full_name}.`);
+              fetchMessages(); // Refresh messages to filter out the blocked user
+            } catch (err: any) {
+              Alert.alert("Error", "Could not block user.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleReportSubmit = async (reason: string, details: string) => {
+    if (!reportTarget) return;
+    try {
+      await api.reports.create({ targetMessageId: reportTarget.id, reason, details });
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
   const renderMessage = ({ item, index }: { item: Message; index: number }) => {
     const isOwn = isOwnMessage(item.sender_id);
     const showDateHeader = shouldShowDateHeader(index);
     const showAvatar =
       !isOwn &&
       (index === 0 || messages[index - 1].sender_id !== item.sender_id);
+    const isSelected = selectedMessageId === item.id;
 
     return (
       <View>
@@ -235,10 +282,14 @@ export default function ChatDetail() {
               ) : null}
             </View>
           )}
-          <View
+          <TouchableOpacity
+            activeOpacity={isOwn ? 1 : 0.7}
+            onPress={() => handleMessagePress(item)}
+            onLongPress={!isOwn ? () => handleBlockPrompt(item) : undefined}
             style={[
               styles.messageBubble,
               isOwn ? styles.ownMessageBubble : styles.otherMessageBubble,
+              isSelected && !isOwn ? { backgroundColor: "#F5EEFC", borderColor: "#3D1A66", borderWidth: 1 } : null
             ]}
           >
             {!isOwn && showAvatar && (
@@ -270,7 +321,22 @@ export default function ChatDetail() {
                 />
               )}
             </View>
-          </View>
+          </TouchableOpacity>
+
+          {isSelected && !isOwn && (
+            <TouchableOpacity
+              style={styles.reportIconWrapper}
+              onPress={() => {
+                setReportTarget({ id: item.id, name: item.body.substring(0, 50) + (item.body.length > 50 ? "..." : "") });
+                setReportModalVisible(true);
+                setSelectedMessageId(null);
+              }}
+            >
+              <View style={styles.reportIconCircle}>
+                <Ionicons name="flag" size={16} color="#FF4444" />
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -417,6 +483,17 @@ export default function ChatDetail() {
           </View>
         )}
       </View>
+
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => {
+          setReportModalVisible(false);
+          setReportTarget(null);
+        }}
+        onSubmit={handleReportSubmit}
+        targetName={reportTarget?.name}
+        type="message"
+      />
     </View>
   );
 }
@@ -630,6 +707,18 @@ const styles = StyleSheet.create({
   },
   otherMessageTime: {
     color: "#999",
+  },
+  reportIconWrapper: {
+    justifyContent: "center",
+    marginLeft: 8,
+  },
+  reportIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#FFE8E8",
+    justifyContent: "center",
+    alignItems: "center",
   },
   inputWrapper: {
     flexDirection: "row",

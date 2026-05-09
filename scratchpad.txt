@@ -129,5 +129,15 @@ Checked the app for manipulative iOS permission prompt wording ("Grant Access", 
 
 ## 🚧 Remaining Work
 1.  Analyze `app.json` and `expo-env.d.ts` for configuration details.
-2.  Analyze source code files in `app/`, `lib/`, `components/`, `hooks/`, and `backend/` to map functionality and data usage.
 3.  Analyze `backend/sql/` files to understand the database schema and data model.
+
+## 🚩 User Reporting & Moderation (Guideline 1.2 Compliance)
+### Architecture
+*   Added `report` table in backend schema to track event and user reports.
+*   Added `/api/reports` endpoint to handle report submissions.
+*   Reports store `reporter_user_id`, `target_user_id`, `target_event_id`, `reason`, and `details` with an initial `status` of 'pending'.
+*   Created `ReportModal` reusable component on the frontend for standardized reporting UX.
+*   Integrated report options into `EventCard`, `EventHeaderImage`, and `HostCard`.
+*   Matches Guideline 1.2 requirements for User Generated Content (UGC) by providing users a way to flag objectionable content.U p d a t e d   a r c h i t e c t u r e   w i t h   u s e r   b l o c k i n g ,   f i l t e r i n g   a c r o s s   e v e n t s ,   f e e d s ,   a n d   c h a t .  
+ I m p l e m e n t e d   l i g h t w e i g h t   p r o f a n i t y   f i l t e r i n g   f o r   e v e n t   c r e a t i o n   t o   e n h a n c e   A p p   S t o r e   G u i d e l i n e   1 . 2   c o m p l i a n c e .  
+ 

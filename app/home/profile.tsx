@@ -349,6 +349,25 @@ export default function ProfileScreen() {
               </View>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push("/home/blocked-users" as any)}
+            >
+              <View style={styles.settingLeft}>
+                <View
+                  style={[styles.iconContainer, { backgroundColor: "#FFE8E8" }]}
+                >
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={20}
+                    color="#FF4444"
+                  />
+                </View>
+                <CText style={styles.settingText}>Blocked Users</CText>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
           </View>
 
           {/* Preferences */}

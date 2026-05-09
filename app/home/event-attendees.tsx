@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   StyleSheet,
@@ -46,6 +47,33 @@ export default function EventAttendees() {
     fetchAttendees();
   }, [fetchAttendees]);
 
+  const handleBlockUser = (item: Attendee) => {
+    Alert.alert(
+      "Block User",
+      `Are you sure you want to block ${item.full_name}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Block", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.blocks.block(item.id);
+              Alert.alert("Blocked", `You have blocked ${item.full_name}.`);
+              fetchAttendees(); // refresh to remove the blocked user
+            } catch (err: any) {
+              if (err.message && err.message.includes("Cannot block yourself")) {
+                Alert.alert("Notice", "You cannot block yourself.");
+              } else {
+                Alert.alert("Error", "Could not block user.");
+              }
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const renderAttendee = ({ item }: { item: Attendee }) => (
     <View style={styles.attendeeCard}>
       <Image
@@ -55,6 +83,9 @@ export default function EventAttendees() {
       <View style={styles.attendeeInfo}>
         <CText style={styles.attendeeName}>{item.full_name}</CText>
       </View>
+      <TouchableOpacity onPress={() => handleBlockUser(item)} style={styles.blockButton}>
+        <Ionicons name="ban-outline" size={20} color="#FF4444" />
+      </TouchableOpacity>
     </View>
   );
 
@@ -105,8 +136,9 @@ export default function EventAttendees() {
             data={attendees}
             renderItem={renderAttendee}
             keyExtractor={(item) => item.id}
+            style={{ flex: 1 }}
             contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
             ListHeaderComponent={
               <CText style={styles.countText}>
                 {attendees.length} {attendees.length === 1 ? "person" : "people"} going
@@ -193,6 +225,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
+    flexGrow: 1,
+    paddingBottom: 120,
   },
   countText: {
     fontSize: 16,
@@ -228,5 +262,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#333",
+  },
+  blockButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "#FFE8E8",
   },
 });

@@ -1,7 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View, Alert } from "react-native";
+import { useState } from "react";
+import api from "@/app/lib/api";
 import CText from "./CText";
+import ReportModal from "./ReportModal";
 
 interface EventCardProps {
   id: string;
@@ -32,6 +35,16 @@ export default function EventCard({
   onBookmarkPress,
   onCardPress,
 }: EventCardProps) {
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+
+  const handleReportSubmit = async (reason: string, details: string) => {
+    try {
+      await api.reports.create({ targetEventId: id, reason, details });
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
   return (
     <TouchableOpacity
       style={styles.eventCard}
@@ -49,19 +62,30 @@ export default function EventCard({
 
         {/* Badges and buttons overlay */}
         <View style={styles.topOverlay}>
-          <TouchableOpacity
-            style={styles.bookmarkButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              onBookmarkPress?.();
-            }}
-          >
-            <Ionicons
-              name={isBookmarked ? "bookmark" : "bookmark-outline"}
-              size={20}
-              color="white"
-            />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <TouchableOpacity
+              style={styles.bookmarkButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                setReportModalVisible(true);
+              }}
+            >
+              <Ionicons name="flag-outline" size={20} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.bookmarkButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                onBookmarkPress?.();
+              }}
+            >
+              <Ionicons
+                name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                size={20}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
           {isTrending && (
             <View style={styles.trendingBadge}>
               <Ionicons name="flame" size={14} color="#FF6B35" />
@@ -118,6 +142,14 @@ export default function EventCard({
           interested
         </CText>
       </View>
+
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={handleReportSubmit}
+        targetName={title}
+        type="event"
+      />
     </TouchableOpacity>
   );
 }
