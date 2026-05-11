@@ -1,4 +1,4 @@
-import { setAuthToken } from "@/app/lib/api";
+import { setAuthToken, setAuthProvider } from "@/app/lib/api";
 import CText from "@/components/CText";
 import { Ionicons } from "@expo/vector-icons";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -128,6 +128,7 @@ export default function ConnectGoogle() {
         // Store the JWT token for subsequent API calls
         if (data.token) {
           await setAuthToken(data.token);
+          await setAuthProvider("google");
           console.log("  ✅ Auth token stored");
         }
 
@@ -226,7 +227,10 @@ export default function ConnectGoogle() {
         }
 
         const data = await response.json();
-        if (data.token) await setAuthToken(data.token);
+        if (data.token) {
+          await setAuthToken(data.token);
+          await setAuthProvider("apple");
+        }
 
         if (!data.needsOnboarding) {
           Alert.alert("Welcome Back!", "Your account is already set up.", [
@@ -245,6 +249,7 @@ export default function ConnectGoogle() {
                 ? data.user.full_name
                 : "",
             avatar_url: data.user?.avatar_url || "",
+            provider: "apple",
           },
         });
       }

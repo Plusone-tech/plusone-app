@@ -4,7 +4,12 @@ import * as SplashScreen from "expo-splash-screen";
 import * as Updates from "expo-updates";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
-import { getAuthToken } from "./lib/api";
+import {
+  clearAuthToken,
+  getAuthToken,
+  getOnboardingCompleted,
+  setOnboardingCompleted,
+} from "./lib/api";
 import { AppProvider } from "./lib/AppContext";
 
 // Prevent the splash screen from auto-hiding
@@ -59,7 +64,7 @@ export default function RootLayout() {
                 },
               },
             ],
-            { cancelable: false }
+            { cancelable: false },
           );
           // Don't set updateCheckComplete - keep app frozen until restart
           return;
@@ -95,23 +100,50 @@ export default function RootLayout() {
         // Get stored JWT token
         const token = await getAuthToken();
 
-        // Check if user is already authenticated with a timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
+        if (!token) {
+          hasNavigated.current = true;
+          router.replace("/onboarding" as any);
+          return;
         }
 
-        const response = await fetch(`${API_BASE}/auth/me`, {
-          method: "GET",
-          credentials: "include",
-          headers,
-          signal: controller.signal,
-        });
+        // Check if user is already authenticated with a timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        let response;
+        try {
+          response = await fetch(`${API_BASE}/auth/me`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal,
+          });
+        } catch (networkError) {
+          clearTimeout(timeoutId);
+
+          // If network is offline, check if they completed onboarding entirely before
+          // deciding whether to let them into /home or clearing their temp session.
+          const isOnboardingDoneLocal = await getOnboardingCompleted();
+          if (isOnboardingDoneLocal) {
+            console.log(
+              "[Auth] Network error or timeout. Offline mode fallback for completed profile.",
+              networkError,
+            );
+            hasNavigated.current = true;
+            router.replace("/home" as any);
+          } else {
+            console.log(
+              "[Auth] Network error for incomplete onboarding user. Clearing temp session.",
+            );
+            await clearAuthToken();
+            hasNavigated.current = true;
+            router.replace("/onboarding" as any);
+          }
+          return;
+        }
 
         clearTimeout(timeoutId);
 
@@ -121,12 +153,32 @@ export default function RootLayout() {
             hasNavigated.current = true;
             // User is authenticated - check if onboarding is complete
             if (data.user.onboarding_completed) {
+              // FULL AUTHENTICATED SESSION: Restore session normally
+              await setOnboardingCompleted(); // sync local flag correctly
               router.replace("/home" as any);
             } else {
-              router.replace("/onboarding/profile-setup" as any);
+              // TEMPORARY AUTH STATE: Onboarding incomplete
+              // Clear temporary auth state on startup so user is not stuck
+              console.log(
+                "[Auth] Incomplete onboarding detected on startup. Clearing stale session.",
+              );
+              await clearAuthToken();
+
+              // Discard temporary onboarding auth session and restart from beginning
+              router.replace("/onboarding" as any);
             }
             return;
           }
+        } else if (
+          response.status === 401 ||
+          response.status === 403 ||
+          response.status === 404
+        ) {
+          // Token is invalid, expired, or user deleted
+          console.log(
+            `[Auth] Backend returned ${response.status}. Clearing token.`,
+          );
+          await clearAuthToken();
         }
       } catch (error) {
         console.log("Auth check failed, redirecting to onboarding:", error);

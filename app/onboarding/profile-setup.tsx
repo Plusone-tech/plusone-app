@@ -15,13 +15,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { api } from "../lib/api";
+import { api, setOnboardingCompleted } from "../lib/api";
 
 export default function ProfileSetup() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [name, setName] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [dateOfBirth, setDateOfBirth] = useState(new Date(2000, 0, 1));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState<"male" | "female" | "other" | null>(
     null,
@@ -34,15 +34,25 @@ export default function ProfileSetup() {
   const [agreedToLegal, setAgreedToLegal] = useState(false);
 
   // Autofill flags
+  const isAppleUser = params?.provider === "apple";
   const isNameAutofilled = Boolean(params && params.name);
   const isDobAutofilled = Boolean(params && params.date_of_birth);
   const isGenderAutofilled = Boolean(params && params.gender);
   const isAvatarAutofilled = Boolean(params && params.avatar_url);
 
-  // Autofill from params if present (from waitlist)
+  // For Apple users: name is either provided by Apple (auto-filled) or not available.
+  // Per Apple Guideline 4, we NEVER ask Apple users for name/email.
+  const appleNameProvided = isAppleUser && isNameAutofilled;
+
+  // Autofill from params if present (from waitlist or Apple auth)
   useEffect(() => {
     if (params) {
       if (params.name) setName(params.name as string);
+      // For Apple users without a name from Apple, use a silent fallback
+      // so we never prompt them for name (Guideline 4)
+      if (isAppleUser && !params.name) {
+        setName("Apple User");
+      }
       if (params.date_of_birth)
         setDateOfBirth(new Date(params.date_of_birth as string));
       if (params.gender)
@@ -82,7 +92,9 @@ export default function ProfileSetup() {
 
   const handleContinue = async () => {
     // Validate inputs
-    if (!name.trim()) {
+    // Apple users: name is either auto-filled from Apple or set to fallback.
+    // Per Guideline 4, we never ask Apple users for name.
+    if (!isAppleUser && !name.trim()) {
       Alert.alert("Validation Error", "Please enter your full name.");
       return;
     }
@@ -108,6 +120,9 @@ export default function ProfileSetup() {
         gender,
         avatar_url: profileImage || undefined,
       });
+
+      // Mark onboarding as completed locally
+      await setOnboardingCompleted();
 
       // Record legal acceptance
       await api.profile.acceptLegal({ eula_version: "1.0" });
@@ -220,36 +235,38 @@ export default function ProfileSetup() {
             </TouchableOpacity>
           </View>
 
-          {/* Name Input */}
-          <View style={styles.inputSection}>
-            <CText fontSize={14} weight="medium" style={styles.label}>
-              Full Name
-            </CText>
-            <TouchableOpacity
-              style={[
-                styles.textInput,
-                { justifyContent: "center" },
-                isNameAutofilled && {
-                  backgroundColor: "#F5F5F5",
-                },
-              ]}
-              onPress={() => !isNameAutofilled && setNameBubbleVisible(true)}
-              activeOpacity={isNameAutofilled ? 1 : 0.7}
-            >
-              <CText
-                style={{
-                  fontSize: 16,
-                  color: name
-                    ? isNameAutofilled
-                      ? "#A2A2A2"
-                      : "#333"
-                    : "#A2A2A2",
-                }}
-              >
-                {name || "Enter your full name"}
+          {/* Name Input — Hidden for Apple users (Guideline 4 compliance) */}
+          {!isAppleUser && (
+            <View style={styles.inputSection}>
+              <CText fontSize={14} weight="medium" style={styles.label}>
+                Full Name
               </CText>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                style={[
+                  styles.textInput,
+                  { justifyContent: "center" },
+                  isNameAutofilled && {
+                    backgroundColor: "#F5F5F5",
+                  },
+                ]}
+                onPress={() => !isNameAutofilled && setNameBubbleVisible(true)}
+                activeOpacity={isNameAutofilled ? 1 : 0.7}
+              >
+                <CText
+                  style={{
+                    fontSize: 16,
+                    color: name
+                      ? isNameAutofilled
+                        ? "#A2A2A2"
+                        : "#333"
+                      : "#A2A2A2",
+                  }}
+                >
+                  {name || "Enter your full name"}
+                </CText>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Date of Birth */}
           <View style={styles.inputSection}>
@@ -439,10 +456,10 @@ export default function ProfileSetup() {
           <Pressable
             style={[
               styles.buttonContainer,
-              (!name || !gender || !agreedToLegal) && styles.buttonDisabled,
+              ((!isAppleUser && !name) || !gender || !agreedToLegal) && styles.buttonDisabled,
             ]}
             onPress={handleContinue}
-            disabled={!name || !gender || !agreedToLegal || isSubmitting}
+            disabled={(!isAppleUser && !name) || !gender || !agreedToLegal || isSubmitting}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#3D1A66" />
@@ -451,7 +468,7 @@ export default function ProfileSetup() {
                 weight="medium"
                 style={{
                   color:
-                    !name || !gender || !agreedToLegal ? "#A2A2A2" : "#000",
+                    (!isAppleUser && !name) || !gender || !agreedToLegal ? "#A2A2A2" : "#000",
                 }}
               >
                 Continue

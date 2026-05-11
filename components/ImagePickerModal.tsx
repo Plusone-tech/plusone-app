@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
   Modal,
   StyleSheet,
   TouchableOpacity,
@@ -37,8 +38,15 @@ export default function ImagePickerModal({
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
-          "Permission Required",
-          "Photo library access is needed to select an image.",
+          "Photo Access Needed",
+          "To select a photo, please allow access to your photo library in Settings.",
+          [
+            { text: "Not Now", style: "cancel" },
+            {
+              text: "Settings",
+              onPress: () => Linking.openSettings(),
+            },
+          ],
         );
         return;
       }
@@ -139,7 +147,7 @@ export default function ImagePickerModal({
               {isLoading ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#3D1A66" />
-                  <CText style={styles.loadingText}>Opening gallery...</CText>
+                  <CText style={styles.loadingText}>Loading...</CText>
                 </View>
               ) : (
                 <>

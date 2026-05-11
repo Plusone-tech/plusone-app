@@ -1,47 +1,48 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CText from "../../components/CText";
-import PrivacyPolicy from "../home/privacy-policy";
-import TermsConditions from "../home/terms-conditions";
+import { Ionicons } from "@expo/vector-icons";
+import CText from "@/components/CText";
+import { api } from "../lib/api";
 
 export default function LegalScreen() {
-  const { type } = useLocalSearchParams();
-
-  if (type === "terms") {
-    return <TermsConditions />;
-  }
-
-  if (type === "privacy") {
-    return <PrivacyPolicy />;
-  }
-
-  return <EulaView />;
-}
-
-function EulaView() {
-  const [eulaText, setEulaText] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
+  const { type } = useLocalSearchParams<{ type: string }>();
+  const [content, setContent] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const getTitle = () => {
+    if (type === "privacy") return "Privacy Policy";
+    if (type === "terms") return "Terms of Use";
+    if (type === "eula") return "End User License Agreement";
+    return "Legal";
+  };
 
   useEffect(() => {
-    async function loadEula() {
+    const loadContent = async () => {
       try {
-        const HOST =
-          process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.29.76:4000";
-        const response = await fetch(`${HOST}/legal/eula`);
-        if (!response.ok) throw new Error("Failed to fetch EULA");
-        const text = await response.text();
-        setEulaText(text);
+        let text = "";
+        if (type === "privacy") {
+          text = await api.legal.privacy();
+        } else if (type === "terms") {
+          text = await api.legal.terms();
+        } else if (type === "eula") {
+          text = await api.legal.eula();
+        } else {
+          text = "Document not found.";
+        }
+        setContent(text || `${getTitle()} could not be loaded.`);
       } catch (err) {
-        console.error("Failed to load EULA:", err);
+        console.error("Failed to load legal document:", err);
         setError("Could not load legal documents at this time.");
+      } finally {
+        setLoading(false);
       }
-    }
-    loadEula();
-  }, []);
+    };
+    loadContent();
+  }, [type]);
 
   return (
     <SafeAreaView edges={["top"]} style={styles.container}>
@@ -52,16 +53,22 @@ function EulaView() {
         >
           <Ionicons name="arrow-back" size={24} color="#3D1A66" />
         </TouchableOpacity>
-        <CText style={styles.title}>End User License Agreement</CText>
+        <CText style={styles.title}>{getTitle()}</CText>
         <View style={{ width: 40 }} />
       </View>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {error ? (
-          <CText style={styles.errorText}>{error}</CText>
-        ) : (
-          <CText style={styles.eulaText}>{eulaText || "Loading..."}</CText>
-        )}
-      </ScrollView>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3D1A66" />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {error ? (
+            <CText style={styles.errorText}>{error}</CText>
+          ) : (
+            <CText style={styles.text}>{content}</CText>
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -94,7 +101,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
   },
-  eulaText: {
+  text: {
     fontSize: 14,
     color: "#333",
     lineHeight: 24,
@@ -104,5 +111,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     marginTop: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

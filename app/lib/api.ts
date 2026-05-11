@@ -4,6 +4,8 @@ const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 const TOKEN_KEY = "auth_token";
+const ONBOARDING_KEY = "onboarding_completed";
+const PROVIDER_KEY = "auth_provider";
 
 // Token management functions
 export async function setAuthToken(token: string): Promise<void> {
@@ -16,6 +18,25 @@ export async function getAuthToken(): Promise<string | null> {
 
 export async function clearAuthToken(): Promise<void> {
   await SecureStore.deleteItemAsync(TOKEN_KEY);
+  await SecureStore.deleteItemAsync(ONBOARDING_KEY);
+  await SecureStore.deleteItemAsync(PROVIDER_KEY);
+}
+
+export async function setAuthProvider(provider: string): Promise<void> {
+  await SecureStore.setItemAsync(PROVIDER_KEY, provider);
+}
+
+export async function getAuthProvider(): Promise<string | null> {
+  return SecureStore.getItemAsync(PROVIDER_KEY);
+}
+
+export async function setOnboardingCompleted(): Promise<void> {
+  await SecureStore.setItemAsync(ONBOARDING_KEY, "true");
+}
+
+export async function getOnboardingCompleted(): Promise<boolean> {
+  const val = await SecureStore.getItemAsync(ONBOARDING_KEY);
+  return val === "true";
 }
 
 async function apiFetch(path: string, options: RequestInit = {}) {
@@ -194,7 +215,9 @@ export const api = {
     markRead: (conversationId: string) =>
       apiFetch(`/chat/${conversationId}/read`, { method: "POST" }),
     deleteMessage: (conversationId: string, messageId: string) =>
-      apiFetch(`/chat/${conversationId}/messages/${messageId}`, { method: "DELETE" }),
+      apiFetch(`/chat/${conversationId}/messages/${messageId}`, {
+        method: "DELETE",
+      }),
   },
   uploads: {
     // Get presigned URL for direct client upload
@@ -283,8 +306,10 @@ export const api = {
   },
   blocks: {
     list: () => apiFetch("/blocks"),
-    block: (userId: string) => apiFetch(`/blocks/${userId}`, { method: "POST" }),
-    unblock: (userId: string) => apiFetch(`/blocks/${userId}`, { method: "DELETE" }),
+    block: (userId: string) =>
+      apiFetch(`/blocks/${userId}`, { method: "POST" }),
+    unblock: (userId: string) =>
+      apiFetch(`/blocks/${userId}`, { method: "DELETE" }),
   },
   legal: {
     terms: () => apiFetchText("/legal/terms"),

@@ -1,4 +1,4 @@
-import { setAuthToken } from "@/app/lib/api";
+import { setAuthToken, setAuthProvider } from "@/app/lib/api";
 import CText from "@/components/CText";
 import { Ionicons } from "@expo/vector-icons";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -8,7 +8,6 @@ import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import {
   Alert,
-  Linking,
   Platform,
   StyleSheet,
   TouchableOpacity,
@@ -103,6 +102,7 @@ export default function OnBoarding() {
 
         if (data.token) {
           await setAuthToken(data.token);
+          await setAuthProvider("google");
           console.log("  ✅ Auth token stored");
         }
 
@@ -190,6 +190,7 @@ export default function OnBoarding() {
 
         if (data.token) {
           await setAuthToken(data.token);
+          await setAuthProvider("apple");
         }
 
         if (data.needsOnboarding) {
@@ -201,6 +202,7 @@ export default function OnBoarding() {
                   ? data.user.full_name
                   : "",
               avatar_url: data.user?.avatar_url || "",
+              provider: "apple",
             },
           } as any);
         } else {
@@ -290,18 +292,16 @@ const styles = StyleSheet.create({
   whiteViewContainer: {
     backgroundColor: "#FFFFFF",
     width: "100%",
-    height: "35%",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
   whiteViewSafeArea: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 20,
     paddingBottom: 60,
     paddingHorizontal: 25,
-    paddingTop: 15,
+    paddingTop: 30,
   },
   tcText: {
     color: "#A2A2A2",

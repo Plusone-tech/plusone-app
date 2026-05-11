@@ -67,12 +67,12 @@ export default function ProfileScreen() {
       } else {
         // Permission denied, open settings
         Alert.alert(
-          "Permission Required",
+          "Notifications Needed",
           "Please enable notifications in your device settings to receive updates about events.",
           [
-            { text: "Cancel", style: "cancel" },
+            { text: "Not Now", style: "cancel" },
             {
-              text: "Open Settings",
+              text: "Settings",
               onPress: () => Linking.openSettings(),
             },
           ],
@@ -84,9 +84,9 @@ export default function ProfileScreen() {
         "Disable Notifications",
         "To disable notifications, please go to your device settings.",
         [
-          { text: "Cancel", style: "cancel" },
+          { text: "Not Now", style: "cancel" },
           {
-            text: "Open Settings",
+            text: "Settings",
             onPress: () => Linking.openSettings(),
           },
         ],
@@ -127,8 +127,15 @@ export default function ProfileScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission Required",
-        "Photo library access is needed to change your profile picture.",
+        "Photo Access Needed",
+        "To change your profile picture, please allow access to your photo library in Settings.",
+        [
+          { text: "Not Now", style: "cancel" },
+          {
+            text: "Settings",
+            onPress: () => Linking.openSettings(),
+          },
+        ],
       );
       return;
     }

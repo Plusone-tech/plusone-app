@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -106,8 +107,15 @@ export default function EditProfile() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission Required",
-        "Photo library access is needed to change your profile picture.",
+        "Photo Access Needed",
+        "To change your profile picture, please allow access to your photo library in Settings.",
+        [
+          { text: "Not Now", style: "cancel" },
+          {
+            text: "Settings",
+            onPress: () => Linking.openSettings(),
+          },
+        ],
       );
       return;
     }
